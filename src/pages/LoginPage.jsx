@@ -45,7 +45,6 @@ const LoginPage = () => {
                         />
                     </div>
                     <Title level={2} className="m-0 font-bold tracking-tight">Welcome Back</Title>
-                    <Text className="text-gray-400">Please enter your credentials to sign in</Text>
                 </div>
 
                 <Form

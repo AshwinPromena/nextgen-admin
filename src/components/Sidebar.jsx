@@ -5,7 +5,7 @@ import {
     Briefcase,
     LogOut
 } from 'lucide-react';
-import { Tooltip } from 'antd';
+import { Tooltip, Popconfirm } from 'antd';
 import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ collapsed }) => {
@@ -83,17 +83,27 @@ const Sidebar = ({ collapsed }) => {
             {/* Sidebar Footer (Logout) */}
             <div className="p-4 border-t border-gray-100 shrink-0">
                 <Tooltip title={collapsed ? 'Logout' : ''} placement="right">
-                    <button
-                        onClick={logout}
-                        className="w-full flex items-center px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all duration-200 group"
+                    <Popconfirm
+                        title={<span className="text-lg font-bold">Logout</span>}
+                        description={<div className="text-sm pt-1">Are you sure you want to logout?</div>}
+                        onConfirm={logout}
+                        okText="Yes"
+                        cancelText="No"
+                        placement="right"
+                        overlayStyle={{ width: '280px' }}
+                        align={{ offset: [0, -100] }}
                     >
-                        <div className="shrink-0 flex items-center justify-center">
-                            <LogOut size={20} />
-                        </div>
-                        {!collapsed && (
-                            <span className="ml-3 font-medium text-sm">Logout</span>
-                        )}
-                    </button>
+                        <button
+                            className="w-full flex items-center px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all duration-200 group cursor-pointer"
+                        >
+                            <div className="shrink-0 flex items-center justify-center">
+                                <LogOut size={20} />
+                            </div>
+                            {!collapsed && (
+                                <span className="ml-3 font-medium text-sm">Logout</span>
+                            )}
+                        </button>
+                    </Popconfirm>
                 </Tooltip>
             </div>
         </div>
