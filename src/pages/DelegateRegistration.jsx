@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Button, Modal, Tag, Card, Typography, Space, Descriptions, Input } from 'antd';
 import { Eye, Search } from 'lucide-react';
 import { getDelegateRegistrations } from '../services/mockApi';
@@ -9,10 +9,10 @@ const { Title } = Typography;
 const DelegateRegistration = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [totalRecords, setTotalRecords] = useState(0);
     const [pagination, setPagination] = useState({
         current: 1,
         pageSize: 10,
+        total: 0,
     });
     const [searchText, setSearchText] = useState('');
     const [selectedRecord, setSelectedRecord] = useState(null);
@@ -20,34 +20,47 @@ const DelegateRegistration = () => {
 
     const debouncedSearchText = useDebounce(searchText, 500);
 
-    useEffect(() => {
-        fetchData();
-    }, [pagination.current, pagination.pageSize, debouncedSearchText]);
-
-    const fetchData = async () => {
+    const fetchData = useCallback(async (currentPagination, search) => {
         setLoading(true);
         try {
+            // API pageIndex starts from 0
             const response = await getDelegateRegistrations(
-                pagination.current - 1,
-                pagination.pageSize,
-                debouncedSearchText
+                currentPagination.current - 1,
+                currentPagination.pageSize,
+                search
             );
+
             if (response.statusCode === 200) {
                 setData(response.data || []);
-                setTotalRecords(response.totalRecords || 0);
+                // Update pagination total only from API response
+                setPagination(prev => ({
+                    ...prev,
+                    total: response.totalRecords || 0,
+                    current: currentPagination.current,
+                    pageSize: currentPagination.pageSize,
+                }));
             }
         } catch (error) {
             console.error('Failed to fetch data:', error);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    // Effect for page/search changes
+    useEffect(() => {
+        fetchData(pagination, debouncedSearchText);
+    }, [pagination.current, pagination.pageSize, debouncedSearchText, fetchData]);
 
     const handleTableChange = (newPagination) => {
-        setPagination(newPagination);
+        // Only update current/pageSize from table, fetchData will update total later
+        setPagination(prev => ({
+            ...prev,
+            current: newPagination.current,
+            pageSize: newPagination.pageSize,
+        }));
     };
 
-    // Columns matched to starred fields in image: Full Name, Company, Phone, Email
     const columns = [
         {
             title: 'Full Name',
@@ -91,7 +104,7 @@ const DelegateRegistration = () => {
     ];
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 px-3 py-2">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <Title level={3} className="m-0">Delegate Registrations</Title>
                 <Input
@@ -101,7 +114,7 @@ const DelegateRegistration = () => {
                     value={searchText}
                     onChange={(e) => {
                         setSearchText(e.target.value);
-                        setPagination({ ...pagination, current: 1 });
+                        setPagination(prev => ({ ...prev, current: 1 }));
                     }}
                     allowClear
                 />
@@ -115,12 +128,11 @@ const DelegateRegistration = () => {
                     rowKey="id"
                     pagination={{
                         ...pagination,
-                        total: totalRecords,
                         showSizeChanger: true,
                         showTotal: (total) => `Total ${total} records`,
                     }}
                     onChange={handleTableChange}
-                    scroll={{ x: 800 }} // Ensure horizontal scroll on mobile
+                    scroll={{ x: 800 }}
                 />
             </Card>
 

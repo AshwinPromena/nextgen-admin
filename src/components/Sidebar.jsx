@@ -34,7 +34,7 @@ const Sidebar = ({ collapsed }) => {
             {/* Sidebar Header */}
             <div className="h-24 flex items-center justify-center border-b border-gray-50 shrink-0 overflow-hidden">
                 {collapsed ? (
-                    <div className="relative flex items-center justify-center w-12 h-12 rounded-xl overflow-hidden shadow-sm bg-gray-50/50">
+                    <div className="relative flex items-center justify-center w-12 h-12 rounded-xl overflow-hidden shadow bg-white">
                         <img
                             src="/app-logo-small.jpeg"
                             alt="Nexgen"
